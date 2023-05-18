@@ -1,6 +1,10 @@
 const axios = require('axios');
 const Transaction = require('../models/transactions');
 const Address = require('../models/address');
+const Price = require('../models/price')
+var cron = require('node-cron');
+
+
 
 exports.task1= async (req, res, next) => {
   try {
@@ -36,3 +40,24 @@ exports.task1= async (req, res, next) => {
     next(err);
   }
 }
+
+
+
+// exports.task2= async (req, res, next) => {
+
+    cron.schedule(' */10 * * * *', async () => {
+      try{
+      const result = await axios.get(
+        `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&amp;vs_currencies=inr`
+        );
+        await Price.create({ price: result.data.ethereum.inr })
+        // return res.status(201).json(result.data.ethereum);
+      }
+      catch (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      }
+    });
+// }
