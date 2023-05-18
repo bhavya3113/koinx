@@ -43,8 +43,6 @@ exports.task1= async (req, res, next) => {
 
 
 
-// exports.task2= async (req, res, next) => {
-
     cron.schedule(' */10 * * * *', async () => {
       try{
       const result = await axios.get(
@@ -60,4 +58,35 @@ exports.task1= async (req, res, next) => {
         next(err);
       }
     });
-// }
+
+
+    exports.task3= async (req, res, next) => {
+      try {
+        const {address} = req.params;
+
+        const add = await Address.findOne({address:address}).populate('transactions')
+
+        let cur_bal = 0;
+        let arr=[];
+        if(add)
+          arr = add.transactions
+        for(const txn of arr)
+        {
+          if(txn.to == address)
+          cur_bal+=txn.value
+          else if(txn.from == address)
+          cur_bal-=txn.value;
+        }
+        const result = await axios.get(
+          `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&amp;vs_currencies=inr`
+          );
+        return res.status(201).json({balance: cur_bal, price: result.data.ethereum.inr });
+        }
+      catch (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      }
+    }
+    

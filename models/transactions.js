@@ -18,7 +18,7 @@ const txnSchema = new schema({
 
          to: String,
 
-         value: String,
+         value: Number,
 
          gas: String,
 
